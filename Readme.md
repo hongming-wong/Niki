@@ -1,0 +1,1 @@
+# Niki, the discord bot that helps people plan trips!
