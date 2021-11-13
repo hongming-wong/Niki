@@ -8,6 +8,7 @@ from wtforms_components import DateRange
 from replit import db
 from datetime import date
 import json
+import sys
 
 app = Flask(__name__)
 
@@ -18,8 +19,9 @@ app.config['SECRET_KEY'] = 'C2HWGVoMGfNTBsrYQg8EcMrdTimkZfAb'
 Bootstrap(app)
 
 # form variables
-my_choices = [('1', 'Cambodia'), ('2', 'China'), ('3', 'USA')]
-budgetMin = 1000
+name = sys.argv[1]
+my_choices = db[f'{name}-dest']
+budgetMin = db[f'{name}-budget']
 startDate = date.today()
 
 

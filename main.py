@@ -3,6 +3,7 @@ import os
 from discord.ext import commands
 from discord.ext.forms import Form
 from replit import db
+import subprocess
 client = commands.Bot(command_prefix='!')
 
 @client.command()
@@ -29,15 +30,18 @@ def addToDB(name, count, dest, budget):
     db[f'{name}-count'] = count
     db[f'{name}-dest'] = dest
     db[f'{name}-budget'] = budget
-    
-    pass
+    return start_server(name)
+
+def start_server(name):
+    subprocess.Popen(["python", "form.py", name])
+    return "https://Niki-Cathay.hongmingwong.repl.co"
     
 @client.command()
 async def plan(ctx, name):
     form = Form(ctx, f'Details for {name}')
     form.add_question('How many people are going?', 'people')
     form.add_question('Which destinations are you considering? (Add a "," between each destination)', 'destinations')
-    form.add_question('Budget Range?', 'budget')
+    form.add_question('Minimum budget?', 'budget')
     result = await form.start()
     description = f"""Number of people: {result.people}\n
     Destinations: {result.destinations}\n
@@ -48,7 +52,8 @@ async def plan(ctx, name):
     msg = await client.wait_for("message", check = validateMsg)
     if msg.content == 'Y':
         await ctx.send(f"Trip {name} is confirmed!")
-        addToDB(name, result.people, result.destinations, result.budget)
+        link = addToDB(name, result.people, result.destinations, result.budget)
+        await ctx.send(f"Send this form to your friends: {link}")
     else:
         await ctx.send(f"Cancelled :(")
 	
