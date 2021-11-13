@@ -5,8 +5,10 @@ from flask import Flask
 from flask import Flask, render_template, redirect, url_for
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, BooleanField, DateField, RadioField, SelectMultipleField
-from wtforms.validators import DataRequired
+from wtforms import StringField, SubmitField, BooleanField, DateField, RadioField, SelectMultipleField, IntegerField
+from wtforms.validators import DataRequired, NumberRange
+from wtforms_components import DateRange
+import datetime
 
 app = Flask(__name__)
 
@@ -16,6 +18,7 @@ app.config['SECRET_KEY'] = 'C2HWGVoMGfNTBsrYQg8EcMrdTimkZfAb'
 # Flask-Bootstrap requires this line
 Bootstrap(app)
 my_choices = [('1', 'Cambodia'), ('2', 'China'), ('3', 'USA')]
+min = 1000
 
 
 class NameForm(FlaskForm):
@@ -23,7 +26,11 @@ class NameForm(FlaskForm):
                                        DataRequired()], label="Where would you like to travel?")
     vaccinated = BooleanField("Are you vaccinated?",
                               validators=[DataRequired()])
-    budget = IntegerField("How much are you willing to spend?")
+    budget = IntegerField("How much are you willing to spend?", validators=[
+                          DataRequired(), NumberRange(min=1000)])
+    start_date = DateField(
+        validators=[DateRange(min=date.today())]
+    )
     name = StringField('Do you have any other suggestions?')
     submit = SubmitField('Submit')
 
