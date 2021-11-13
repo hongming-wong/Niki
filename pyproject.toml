@@ -11,6 +11,8 @@ Flask = "^2.0.2"
 Flask-Bootstrap = "^3.3.7"
 Flask-WTF = "^1.0.0"
 WTForms = "^3.0.0"
+WTForms-Components = "^0.10.5"
+replit = "^3.2.4"
 
 [tool.poetry.dev-dependencies]
 
