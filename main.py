@@ -56,5 +56,19 @@ async def plan(ctx, name):
         await ctx.send(f"Send this form to your friends: {link}")
     else:
         await ctx.send(f"Cancelled :(")
-	
+
+@client.command()
+async def TIP(ctx):
+    trips = db['trips'].value
+    if len(trips) == 0:
+        await ctx.send("No trips in progress. Use the command !plan to start one!")
+    else:
+        await ctx.send(f"{len(trips)} trip(s_ in progress")   
+        s = ""
+        for i, v in enumerate(trips):
+            s += f"{i + 1}. {v}\n"
+        await ctx.send(s)
+# async def info(ctx, arg):
+
+    
 client.run(os.environ['Token'])
