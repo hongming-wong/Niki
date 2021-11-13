@@ -17,11 +17,13 @@ app.config['SECRET_KEY'] = 'C2HWGVoMGfNTBsrYQg8EcMrdTimkZfAb'
 Bootstrap(app)
 my_choices = [('1', 'Cambodia'), ('2', 'China'), ('3', 'USA')]
 
+
 class NameForm(FlaskForm):
-    
-    destinations = SelectMultipleField(choices=my_choices,validators=[DataRequired()], label="Where would you like to travel?")
-		vaccinated = BooleanField("Are you vaccinated?", validators=[DataRequired()])
-		budget = IntegerField("How much are you willing to spend?")
+    destinations = SelectMultipleField(choices=my_choices, validators=[
+                                       DataRequired()], label="Where would you like to travel?")
+    vaccinated = BooleanField("Are you vaccinated?",
+                              validators=[DataRequired()])
+    budget = IntegerField("How much are you willing to spend?")
     name = StringField('Do you have any other suggestions?')
     submit = SubmitField('Submit')
 
