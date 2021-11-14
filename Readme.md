@@ -1,6 +1,6 @@
 # Niki, the discord bot that helps people plan trips!
 
-GROUP 60 - The Fly Free Team<b>
+Cathay Hackathon GROUP 60 - The Fly Free Team<b>
 
 To run this program, type "python start.py"
 
