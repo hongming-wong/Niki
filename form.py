@@ -1,5 +1,5 @@
 """Autogenerates and accepts forms input"""
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, BooleanField, DateField, RadioField, SelectMultipleField, IntegerField
@@ -12,6 +12,8 @@ import sys
 
 app = Flask(__name__)
 
+print("form server is running")
+
 # Flask-WTF requires an encryption key - the string can be anything
 app.config['SECRET_KEY'] = 'C2HWGVoMGfNTBsrYQg8EcMrdTimkZfAb'
 
@@ -19,37 +21,43 @@ app.config['SECRET_KEY'] = 'C2HWGVoMGfNTBsrYQg8EcMrdTimkZfAb'
 Bootstrap(app)
 
 # form variables
-name = sys.argv[1]
-my_choices = db[f'{name}-dest']
-budgetMin = db[f'{name}-budget']
-startDate = date.today()
 
 
-
-class NameForm(FlaskForm):
-    name = StringField("Your name?", validators=[DataRequired()])
-    destinations = SelectMultipleField(choices=my_choices, validators=[DataRequired()], label="Where would you like to travel?")
-    vaccinated = BooleanField("Are you vaccinated?",validators=[DataRequired()])
-    budget = IntegerField("How much are you willing to spend?", validators=[DataRequired(), NumberRange(min=budgetMin)])
-		#note that wtf forms don't offer selection of range of dates
-		# this is temporary! 
-    start_date = DateField(label = "When onwards will you be available?", validators=[DateRange(min=startDate)])
-    suggestions = StringField('Do you have any other suggestions?')
-    submit = SubmitField('Submit')
 
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     names = [1, 2, 3, 4]
+    trip = request.args.get('trip')
+    if trip is None: 
+        return "Parameter Required"
+    
+    if trip not in db['trips']:
+        return "Trip doesn't exist"
     # you must tell the variable 'form' what you named the class, above
     # 'form' is the variable name used in this template: index.html
+    
+    my_choices = db[f'{trip}-dest']
+    budgetMin = db[f'{trip}-budget']
+    startDate = date.today()
+    class NameForm(FlaskForm):
+        name = StringField("Your name?", validators=[DataRequired()])
+        destinations = SelectMultipleField(choices=my_choices, validators=[DataRequired()], label="Where would you like to travel?")
+        vaccinated = BooleanField("Are you vaccinated?",validators=[DataRequired()])
+        budget = IntegerField("How much are you willing to spend?", validators=[DataRequired(), NumberRange(min=budgetMin)])
+		#note that wtf forms don't offer selection of range of dates
+		# this is temporary! 
+        start_date = DateField(label = "When onwards will you be available?", validators=[DateRange(min=startDate)])
+        suggestions = StringField('Do you have any other suggestions?')
+        submit = SubmitField('Submit')
+    
     form = NameForm()
     if form.validate_on_submit():
         # stores the information in the database
-        if "count" in db.keys():
-            db["count"] = db["count"] + 1
+        if f"{trip}-counting" in db.keys():
+            db[f"{trip}-counting"] = db[f"{trip}-counting"] + 1
         else:
-            db["count"] = 1
+            db[f"{trip}-counting"] = 1
         dictionary = {"destinations": form.destinations.data, 
         "vaccinated": form.vaccinated.data,
         "budget": form.vaccinated.data,
@@ -57,7 +65,7 @@ def index():
         "suggestions": form.suggestions.data
         }
         json_object = json.dumps(dictionary, indent = 4, default=str)
-        db[form.name.data] = json_object 
+        db[f"{trip}-{form.name.data}"] = json_object 
         # redirect the browser to another route and template
         return redirect(
             "https://upload.wikimedia.org/wikipedia/en/4/4a/Dr_John_Zoidberg.png"
