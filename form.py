@@ -36,18 +36,23 @@ def index():
         return "Trip doesn't exist"
     # you must tell the variable 'form' what you named the class, above
     # 'form' is the variable name used in this template: index.html
+
+    if f"{trip}-counting" in db.keys():
+        if int(db[f"{trip}-counting"]) >= int(db[f"{trip}-count"]):
+            return "Trip is full, sorry"
+
     
     my_choices = db[f'{trip}-dest']
-    budgetMin = db[f'{trip}-budget']
+    budgetMin = int(db[f'{trip}-budget'])
     startDate = date.today()
     class NameForm(FlaskForm):
         name = StringField("Your name?", validators=[DataRequired()])
         destinations = SelectMultipleField(choices=my_choices, validators=[DataRequired()], label="Where would you like to travel?")
         vaccinated = BooleanField("Are you vaccinated?",validators=[DataRequired()])
-        budget = IntegerField("How much are you willing to spend?", validators=[DataRequired(), NumberRange(min=budgetMin)])
+        budget = IntegerField(f"The maximum that you are willing to spend? (The organizer set the minimum to {budgetMin})", validators=[DataRequired(), NumberRange(min=budgetMin)])
 		#note that wtf forms don't offer selection of range of dates
 		# this is temporary! 
-        start_date = DateField(label = "When onwards will you be available?", validators=[DateRange(min=startDate)])
+        start_date = DateField(label = "When onwards will you be available?", validators=[DataRequired(), DateRange(min=startDate)])
         suggestions = StringField('Do you have any other suggestions?')
         submit = SubmitField('Submit')
     
@@ -55,9 +60,17 @@ def index():
     if form.validate_on_submit():
         # stores the information in the database
         if f"{trip}-counting" in db.keys():
-            db[f"{trip}-counting"] = db[f"{trip}-counting"] + 1
+            if int(db[f"{trip}-counting"]) >= int(db[f"{trip}-count"]):
+                return "Trip is full, sorry"
+            else:    
+                db[f"{trip}-counting"] = db[f"{trip}-counting"] + 1
         else:
             db[f"{trip}-counting"] = 1
+
+        participants = db[trip].value
+        participants.append(form.name.data)
+        db[trip] = participants
+        
         dictionary = {"destinations": form.destinations.data, 
         "vaccinated": form.vaccinated.data,
         "budget": form.vaccinated.data,
@@ -88,4 +101,4 @@ def internal_server_error(e):
 
 # keep this as is
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=8080)
+    app.run(host='0.0.0.0', debug=False, use_reloader = False, port=8080)

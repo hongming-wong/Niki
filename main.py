@@ -4,6 +4,7 @@ from discord.ext import commands
 #run pip install discord-ext-forms
 from discord.ext.forms import Form
 import time
+from rec import getRec
 
 from replit import db
 
@@ -32,7 +33,9 @@ def addToDB(name, count, dest, budget):
         temp.append(name)
         db['trips'] = temp
         
-    db[f'{name}-count'] = count
+    db[name] = []
+    db[f'{name}-count'] = int(count)
+    db[f'{name}-counting'] = 0
     db[f'{name}-dest'] = dest
     db[f'{name}-budget'] = budget
     
@@ -74,7 +77,28 @@ async def TIP(ctx):
 
 @client.command()
 async def info(ctx, arg):
-    pass
+    if arg not in db['trips']:
+        await ctx.send("This trip doesn't exist!")
+        return 
+    count = db[f"{arg}-count"]
+    counting = db[f"{arg}-counting"]
+    des = db[f'{arg}-dest'].value
+    budget = db[f'{arg}-budget']
+    part = ""
+    for i in db[arg].value:
+        part += i + "\n"
+
+    description = f"""Number of people invited: {count}\n
+    Destinations: {des}\n
+    Minimum Budget: {budget}\n\n
+    People who have registered: {counting}\n 
+    {part}\n\n
+    Link to form: https://Niki-Cathay.hongmingwong.repl.co?trip={arg} 
+    """
+    embed=discord.Embed(title="Summary",description=description )
+    await ctx.send(embed=embed)
+    
+
 
 @client.command()
 async def assist(ctx, arg):
@@ -82,14 +106,15 @@ async def assist(ctx, arg):
         await ctx.send("This trip doesn't exist!")
         return 
     
-    if db[f"{arg}-count"] not in db.keys():
+    if f"{arg}-count" not in db.keys():
         await ctx.send("Nobody has registered yet!")
         return
 
-    counting = db[f"{arg}-count"]
-    count = db[f"{arg}-counting"]
+    count = int(db[f"{arg}-count"])
+    counting = int(db[f"{arg}-counting"])
 
-    if count != counting:
+    if counting < count:
+        await ctx.send(f"Pending requests: {count - counting}")
         await ctx.send("Not everyone has signed up yet, you sure you want to proceed? (Y/N)")
         msg = await client.wait_for("message", check = validateMsg)
         if msg == "N":
@@ -97,9 +122,12 @@ async def assist(ctx, arg):
             return
     
     await ctx.send("Please for a moment for me to create recommendations...")
-    time.sleep(2)
+
+    budgetList = []
+    rec = getRec(budgetList, int(db[f"{arg}-budget"]))
     await ctx.send("Here are my recommendations:")
-    #do something
+    await ctx.send(rec)
+    
 
         
 
